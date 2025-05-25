@@ -1,0 +1,12 @@
+.profile-container {
+    max-width: 600px;
+    margin: 60px auto;
+    text-align: center;
+}
+
+.profile-card {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 10px;
+    background: #f9f9f9;
+}

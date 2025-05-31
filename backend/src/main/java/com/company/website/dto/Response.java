@@ -9,5 +9,12 @@ public class Response {
         this.data = data;
     }
 
-    // Getters and Setters
+    // ✅ Add getters (no need for setters if you only return)
+    public String getMessage() {
+        return message;
+    }
+
+    public Object getData() {
+        return data;
+    }
 }

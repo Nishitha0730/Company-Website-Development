@@ -1,37 +1,45 @@
-// import { useState } from 'react';
-//
-// const LoginPage = () => {
-//     const [form, setForm] = useState({ username: '', password: '' });
-//
-//     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
-//
-//     const handleSubmit = e => {
-//         e.preventDefault();
-//         // TODO: Send POST to /auth/login and handle token
-//         console.log('Logging in:', form);
-//     };
-//
-//     return (
-//         <form onSubmit={handleSubmit}>
-//             <h2>Login</h2>
-//             <input name="username" onChange={handleChange} placeholder="Username" required />
-//             <input type="password" name="password" onChange={handleChange} placeholder="Password" required />
-//             <button type="submit">Login</button>
-//         </form>
-//     );
-// };
-//
-// export default LoginPage;
-
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import './Auth.css';
 
 const LoginPage = () => {
+    const [formData, setFormData] = useState({ username: "", password: "" });
+    const navigate = useNavigate();
+
+    const handleChange = (e) => {
+        setFormData({...formData, [e.target.name]: e.target.value});
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const res = await fetch("http://localhost:8080/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("✅ Login successful");
+                localStorage.setItem("user", JSON.stringify(data.data));
+                navigate("/profile");
+            } else {
+                alert("❌ Login failed: " + data.data);
+            }
+        } catch (error) {
+            alert("🚨 Network error: " + error.message);
+        }
+    };
+
     return (
         <div className="auth-container">
             <h2>Login</h2>
-            <form className="auth-form">
-                <input type="text" placeholder="Username" required />
-                <input type="password" placeholder="Password" required />
+            <form className="auth-form" onSubmit={handleSubmit}>
+                <input type="text" name="username" placeholder="Username" onChange={handleChange} required />
+                <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
                 <button type="submit">Login</button>
             </form>
         </div>

@@ -7,16 +7,21 @@ import com.company.website.exception.InvalidCredentialsException;
 import com.company.website.mapper.EntityDtoMapper;
 import com.company.website.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+
 public class UserService {
 
     @Autowired
     private UserRepository userRepo;
 
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
     public UserDto register(User user) {
         user.setRole("USER");
+        user.setPassword(encoder.encode(user.getPassword())); // 🔐 hash password
         userRepo.save(user);
         return EntityDtoMapper.toDto(user);
     }
@@ -25,7 +30,8 @@ public class UserService {
         User user = userRepo.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new InvalidCredentialsException("User not found"));
 
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
+        // 🔐 Compare hashed password
+        if (!encoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Incorrect password");
         }
 

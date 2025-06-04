@@ -4,6 +4,7 @@ import com.company.website.dto.LoginRequest;
 import com.company.website.dto.Response;
 import com.company.website.dto.UserDto;
 import com.company.website.entity.User;
+import com.company.website.mapper.EntityDtoMapper;
 import com.company.website.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,5 +41,16 @@ public class AuthController {
     public ResponseEntity<Response> getProfile(@PathVariable String username) {
         UserDto dto = userService.getProfile(username);
         return ResponseEntity.ok(new Response("Profile fetched", dto));
+    }
+
+    @PutMapping("/profile/{username}/image")
+    public ResponseEntity<Response> updateProfileImage(@PathVariable String username, @RequestBody String imageUrl) {
+        try {
+            User user = userService.updateProfileImage(username, imageUrl);
+            return ResponseEntity.ok(new Response("Profile image updated", EntityDtoMapper.toDto(user)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new Response("Failed to update image", e.getMessage()));
+        }
     }
 }

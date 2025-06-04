@@ -4,6 +4,16 @@ public class UserDto {
     private String username;
     private String email;
     private String role;
+    private String profileImage;
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
 
     // Getters & setters
 

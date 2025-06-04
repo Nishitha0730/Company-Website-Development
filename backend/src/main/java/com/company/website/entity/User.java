@@ -19,7 +19,20 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "profile_image")
+    private String profileImage;
+
     private String role;
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+
 
     // Getters & setters
 

@@ -23,6 +23,11 @@ public class UserService {
     public UserDto register(User user) {
         user.setRole("USER");
         user.setPassword(encoder.encode(user.getPassword()));
+
+        if (user.getProfileImage() == null || user.getProfileImage().isEmpty()) {
+            user.setProfileImage("/default_profile_image.png");
+        }
+
         userRepo.save(user);
         return EntityDtoMapper.toDto(user);
     }
@@ -42,5 +47,12 @@ public class UserService {
         User user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return EntityDtoMapper.toDto(user);
+    }
+
+    public User updateProfileImage(String username, String imageUrl) {
+        User user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setProfileImage(imageUrl);
+        return userRepo.save(user);
     }
 }

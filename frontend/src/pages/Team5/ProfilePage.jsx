@@ -32,7 +32,7 @@ const ProfilePage = () => {
             <h2>👤 Your Profile</h2>
             <div className="profile-card">
                 <img
-                    src={user.profileImage || '/default-avatar.png'}
+                    src={user.profileImage || '/default_profile_image.png'}
                     alt="Profile"
                     className="profile-image"
                 />

@@ -3,6 +3,7 @@ package com.company.website.mapper;
 import com.company.website.dto.UserDto;
 import com.company.website.entity.User;
 
+
 public class EntityDtoMapper {
 
     public static UserDto toDto(User user) {
@@ -10,6 +11,7 @@ public class EntityDtoMapper {
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
+        dto.setProfileImage(user.getProfileImage());
         return dto;
     }
 }

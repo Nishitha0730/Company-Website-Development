@@ -1,5 +1,10 @@
 package com.company.website.controller;
 
+
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.*;
+import java.io.IOException;
+
 import com.company.website.dto.LoginRequest;
 import com.company.website.dto.Response;
 import com.company.website.dto.UserDto;
@@ -43,14 +48,36 @@ public class AuthController {
         return ResponseEntity.ok(new Response("Profile fetched", dto));
     }
 
-    @PutMapping("/profile/{username}/image")
-    public ResponseEntity<Response> updateProfileImage(@PathVariable String username, @RequestBody String imageUrl) {
+    @PostMapping("/profile/{username}/upload-image")
+    public ResponseEntity<Response> uploadProfileImage(
+            @PathVariable String username,
+            @RequestParam("image") MultipartFile file) {
         try {
-            User user = userService.updateProfileImage(username, imageUrl);
-            return ResponseEntity.ok(new Response("Profile image updated", EntityDtoMapper.toDto(user)));
+            // Create a directory to store uploaded images
+            String uploadDir = "uploads/";
+            Path uploadPath = Paths.get(uploadDir);
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Unique filename: username + original filename
+            String fileName = username + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+
+            // Save file
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Save relative path (for frontend usage)
+            String imagePath = uploadDir + fileName;
+
+            // Update DB with new image path
+            User updatedUser = userService.updateProfileImage(username, imagePath);
+
+            return ResponseEntity.ok(new Response("Image uploaded", EntityDtoMapper.toDto(updatedUser)));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new Response("Failed to update image", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new Response("Failed to upload image", e.getMessage()));
         }
     }
 }

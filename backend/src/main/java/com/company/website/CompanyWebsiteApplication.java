@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class CompanyWebsiteApplication {
 
     public static void main(String[] args) {
-
         SpringApplication.run(CompanyWebsiteApplication.class, args);
+        System.out.println("✅ Backend is running on http://localhost:8080/");
     }
 }

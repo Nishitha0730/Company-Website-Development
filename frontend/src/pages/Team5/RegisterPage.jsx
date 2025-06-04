@@ -1,36 +1,31 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
 import './Auth.css';
 
 const RegisterPage = () => {
-    const [formData, setFormData] = useState({ username: "", email: "", password: "" });
-    const navigate = useNavigate();
+    const [formData, setFormData] = useState({ username: '', email: '', password: '' });
 
-    const handleChange = (e) => {
-        setFormData({...formData, [e.target.name]: e.target.value});
-    };
+    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
-            const res = await fetch("http://localhost:8080/api/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+            const res = await fetch('http://localhost:8080/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
-            const data = await res.json();
+            const text = await res.text();
+            const data = text ? JSON.parse(text) : {};
 
             if (res.ok) {
-                alert("✅ Registration successful");
-                localStorage.setItem("user", JSON.stringify(data.data));
-                navigate("/profile");
+                alert('✅ Registered successfully');
+                localStorage.setItem('user', JSON.stringify(data.data));
             } else {
-                alert("❌ Registration failed: " + data.data);
+                alert('❌ Registration failed: ' + (data.data || 'Unknown error'));
             }
-        } catch (error) {
-            alert("🚨 Network error: " + error.message);
+        } catch (err) {
+            alert('🚨 Network error: ' + err.message);
         }
     };
 

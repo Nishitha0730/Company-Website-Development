@@ -10,8 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service
+import java.util.Optional;
 
+@Service
 public class UserService {
 
     @Autowired
@@ -21,7 +22,7 @@ public class UserService {
 
     public UserDto register(User user) {
         user.setRole("USER");
-        user.setPassword(encoder.encode(user.getPassword())); // 🔐 hash password
+        user.setPassword(encoder.encode(user.getPassword()));
         userRepo.save(user);
         return EntityDtoMapper.toDto(user);
     }
@@ -30,7 +31,6 @@ public class UserService {
         User user = userRepo.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new InvalidCredentialsException("User not found"));
 
-        // 🔐 Compare hashed password
         if (!encoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Incorrect password");
         }

@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './pages/Team5/Navbar';
 import Home from './pages/Team5/Home';
 import LoginPage from './pages/Team5/LoginPage';
 import RegisterPage from './pages/Team5/RegisterPage';
 import ProfilePage from './pages/Team5/ProfilePage';
 import AdminPage from './pages/Team5/AdminPage';
+import Navbar from './pages/Team5/Navbar';
 
 function App() {
     return (

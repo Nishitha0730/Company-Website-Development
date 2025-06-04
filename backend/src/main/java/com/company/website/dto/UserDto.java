@@ -5,26 +5,26 @@ public class UserDto {
     private String email;
     private String role;
 
-    // ✅ Getters
+    // Getters & setters
+
     public String getUsername() {
         return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    // ✅ Setters
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getRole() {
+        return role;
     }
 
     public void setRole(String role) {

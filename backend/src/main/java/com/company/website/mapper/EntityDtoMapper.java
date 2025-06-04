@@ -4,6 +4,7 @@ import com.company.website.dto.UserDto;
 import com.company.website.entity.User;
 
 public class EntityDtoMapper {
+
     public static UserDto toDto(User user) {
         UserDto dto = new UserDto();
         dto.setUsername(user.getUsername());

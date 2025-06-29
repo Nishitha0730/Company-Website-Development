@@ -2,10 +2,15 @@ package com.company.website.controller;
 
 
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.nio.file.*;
 import java.io.IOException;
+import java.util.Map;
 
 import com.company.website.dto.LoginRequest;
+import com.company.website.repository.UserRepository;
+
 import com.company.website.dto.Response;
 import com.company.website.dto.UserDto;
 import com.company.website.entity.User;
@@ -18,8 +23,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3001")
 public class AuthController {
+
+    private final UserRepository userRepository;
+
+    public AuthController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Autowired
     private UserService userService;
@@ -49,35 +60,37 @@ public class AuthController {
     }
 
     @PostMapping("/profile/{username}/upload-image")
-    public ResponseEntity<Response> uploadProfileImage(
-            @PathVariable String username,
-            @RequestParam("image") MultipartFile file) {
-        try {
-            // Create a directory to store uploaded images
-            String uploadDir = "uploads/";
-            Path uploadPath = Paths.get(uploadDir);
+    public ResponseEntity<?> uploadProfileImage(@PathVariable String username, @RequestParam("image") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("Image is empty");
+        }
 
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
+        try {
+            System.out.println("Username in path variable: " + username);
+            String uploadDir = "uploads/";
+            String filename = username + "_" + file.getOriginalFilename();
+
+            // Ensure uploads directory exists
+            File directory = new File(uploadDir);
+            if (!directory.exists()) {
+                directory.mkdirs();
             }
 
-            // Unique filename: username + original filename
-            String fileName = username + "_" + file.getOriginalFilename();
-            Path filePath = uploadPath.resolve(fileName);
+            Path filepath = Paths.get(uploadDir, filename);
+            Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Save file
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            // ✅ FIXED: get user correctly
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
-            // Save relative path (for frontend usage)
-            String imagePath = uploadDir + fileName;
+            // Save path relative to static access
+            user.setProfileImage("uploads/" + filename);
+            userRepository.save(user);
 
-            // Update DB with new image path
-            User updatedUser = userService.updateProfileImage(username, imagePath);
+            return ResponseEntity.ok(Map.of("message", "Success", "data", user));
 
-            return ResponseEntity.ok(new Response("Image uploaded", EntityDtoMapper.toDto(updatedUser)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Response("Failed to upload image", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Failed to upload image");
         }
     }
 }

@@ -3,6 +3,7 @@ package com.company.website.dto;
 public class UserDto {
     private String username;
     private String email;
+    private String password;
     private String role;
     private String profileImage;
 
@@ -39,5 +40,13 @@ public class UserDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

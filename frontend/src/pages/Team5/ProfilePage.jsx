@@ -117,8 +117,11 @@ const ProfilePage = () => {
     };
 
     // Construct the profile image URL
+    // const profileImageUrl = user.profileImage
+    //     ? `http://localhost:8080/uploads/profile_images/${user.profileImage}`
+    //     : '/default_profile_image.png';
     const profileImageUrl = user.profileImage
-        ? `http://localhost:8080/uploads/profile_images/${user.profileImage}`
+        ? `http://localhost:8080/uploads/${user.profileImage}`  // e.g., "qqq_mechanical.jpeg"
         : '/default_profile_image.png';
 
     return (

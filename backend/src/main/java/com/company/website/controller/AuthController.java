@@ -59,16 +59,53 @@ public class AuthController {
         return ResponseEntity.ok(new Response("Profile fetched", dto));
     }
 
+//    @PostMapping("/profile/{username}/upload-image")
+//    public ResponseEntity<?> uploadProfileImage(@PathVariable String username, @RequestParam("image") MultipartFile file) {
+//        if (file.isEmpty()) {
+//            return ResponseEntity.badRequest().body("Image is empty");
+//        }
+//
+//        try {
+//            System.out.println("Username in path variable: " + username);
+//            String uploadDir = "uploads/";
+//            String filename = username + "_" + file.getOriginalFilename();
+//
+//            // Ensure uploads directory exists
+//            File directory = new File(uploadDir);
+//            if (!directory.exists()) {
+//                directory.mkdirs();
+//            }
+//
+//            Path filepath = Paths.get(uploadDir, filename);
+//            Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
+//
+//            // ✅ FIXED: get user correctly
+//            User user = userRepository.findByUsername(username)
+//                    .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+//
+//            // Save path relative to static access
+//            user.setProfileImage("uploads/" + filename);
+//            userRepository.save(user);
+//
+//            return ResponseEntity.ok(Map.of("message", "Success", "data", user));
+//
+//        } catch (IOException e) {
+//            return ResponseEntity.status(500).body("Failed to upload image");
+//        }
+//    }
+
     @PostMapping("/profile/{username}/upload-image")
-    public ResponseEntity<?> uploadProfileImage(@PathVariable String username, @RequestParam("image") MultipartFile file) {
+    public ResponseEntity<?> uploadProfileImage(
+            @PathVariable String username,
+            @RequestParam("image") MultipartFile file
+    ) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("Image is empty");
         }
 
         try {
-            System.out.println("Username in path variable: " + username);
             String uploadDir = "uploads/";
-            String filename = username + "_" + file.getOriginalFilename();
+            String filename = username + "_" + file.getOriginalFilename(); // e.g., "qqq_mechanical.jpeg"
 
             // Ensure uploads directory exists
             File directory = new File(uploadDir);
@@ -76,18 +113,20 @@ public class AuthController {
                 directory.mkdirs();
             }
 
+            // Save file to disk
             Path filepath = Paths.get(uploadDir, filename);
             Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
 
-            // ✅ FIXED: get user correctly
+            // Update user's profileImage (store ONLY filename)
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-
-            // Save path relative to static access
-            user.setProfileImage("uploads/" + filename);
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            user.setProfileImage(filename); // ✅ Store "qqq_mechanical.jpeg", not "uploads/qqq_mechanical.jpeg"
             userRepository.save(user);
 
-            return ResponseEntity.ok(Map.of("message", "Success", "data", user));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Image uploaded successfully",
+                    "data", EntityDtoMapper.toDto(user)
+            ));
 
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Failed to upload image");

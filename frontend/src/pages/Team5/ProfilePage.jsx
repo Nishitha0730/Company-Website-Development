@@ -140,10 +140,30 @@ const ProfilePage = () => {
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Role:</strong> {user.role}</p>
 
-                <input type="file" accept="image/*" onChange={handleFileChange} />
-                <button onClick={handleImageUpload} className="edit-button">Upload Image</button>
+                {/*<input type="file" accept="image/*" onChange={handleFileChange} />*/}
+                {/*<button onClick={handleImageUpload} className="edit-button">Upload Image</button>*/}
 
-                {message && <p>{message}</p>}
+                {/*{message && <p>{message}</p>}*/}
+                <>
+                    <input
+                        id="file-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="file-input"
+                    />
+                    <label htmlFor="file-upload" className="file-label">
+                        Choose Image
+                    </label>
+                    <button onClick={handleImageUpload} className="edit-button">
+                        <span>Upload Image</span>
+                    </button>
+                    {message && (
+                        <p className={`message ${message.includes("✅") ? "success" : "error"}`}>
+                            {message}
+                        </p>
+                    )}
+                </>
             </div>
         </div>
     );

@@ -42,6 +42,9 @@ const RegisterPage = () => {
                 <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
                 <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
                 <button type="submit">Register</button>
+                <p className="auth-links">
+                    Already have an account? <a href="/login">Login here</a>
+                </p>
             </form>
         </div>
     );

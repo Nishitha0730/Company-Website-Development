@@ -23,6 +23,7 @@ const LoginPage = () => {
             if (res.ok) {
                 alert('✅ Login successful');
                 localStorage.setItem('user', JSON.stringify(data.data));
+                navigate('/profile');
             } else {
                 alert('❌ Login failed: ' + (data.data || 'Unknown error'));
             }

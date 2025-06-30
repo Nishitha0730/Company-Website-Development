@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Auth.css';
+// import './LoginPage.jsx'
+// import './Navbar.css';
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+    const navigate = useNavigate();
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -21,6 +25,7 @@ const RegisterPage = () => {
             if (res.ok) {
                 alert('✅ Registered successfully');
                 localStorage.setItem('user', JSON.stringify(data.data));
+                navigate('/login'); // Redirect to login page after registration
             } else {
                 alert('❌ Registration failed: ' + (data.data || 'Unknown error'));
             }

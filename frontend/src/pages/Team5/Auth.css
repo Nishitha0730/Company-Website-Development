@@ -64,4 +64,40 @@ button:disabled {
     cursor: not-allowed;
 }
 
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+
+.warning-continue-btn {
+    background-color: #ffc107;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.warning-continue-btn:hover {
+    background-color: #e0a800;
+}
+
+.warning-continue-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Add input validation styling */
+input:invalid {
+    border-color: #ffc107;
+}
+
+input:valid {
+    border-color: #28a745;
+}
 /*2nd update*/

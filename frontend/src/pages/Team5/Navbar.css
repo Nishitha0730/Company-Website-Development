@@ -1,29 +1,122 @@
+/*.navbar {*/
+/*    background: #333;*/
+/*    color: white;*/
+/*    padding: 15px 30px;*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    align-items: center;*/
+/*}*/
+
+/*.logo {*/
+/*    font-size: 1.5rem;*/
+/*    font-weight: bold;*/
+/*}*/
+
+/*.nav-links {*/
+/*    list-style: none;*/
+/*    display: flex;*/
+/*    gap: 20px;*/
+/*}*/
+
+/*.nav-links li a {*/
+/*    color: white;*/
+/*    text-decoration: none;*/
+/*    font-weight: 500;*/
+/*}*/
+
+/*.nav-links li a:hover {*/
+/*    text-decoration: underline;*/
+/*}*/
+
+
+
+/*2nd update*/
+
+
 .navbar {
-    background: #333;
+    background: linear-gradient(135deg, #2c3e50, #1a1a2e);
     color: white;
-    padding: 15px 30px;
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #4facfe, #00f2fe);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
 }
 
 .nav-links {
     list-style: none;
     display: flex;
-    gap: 20px;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
 }
 
 .nav-links li a {
-    color: white;
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     font-weight: 500;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 .nav-links li a:hover {
-    text-decoration: underline;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-links li a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #4facfe;
+    transition: width 0.3s ease;
+}
+
+.nav-links li a:hover::after {
+    width: 100%;
+}
+
+/* Active link style */
+.nav-links li a.active {
+    color: white;
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .nav-links {
+        margin-top: 1rem;
+        gap: 1rem;
+    }
 }

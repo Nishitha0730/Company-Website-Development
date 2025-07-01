@@ -35,17 +35,66 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+//    @PostMapping("/register")
+//    public ResponseEntity<Map<String, Object>> register(@RequestBody User user) {
+//        // Check if user exists (without revealing which field conflicts)
+//        if (userRepository.existsByUsername(user.getUsername()) ||
+//                userRepository.existsByEmail(user.getEmail())) {
+//
+//            return ResponseEntity.status(HttpStatus.CONFLICT)
+//                    .body(Map.of(
+//                            "status", "error",
+//                            "code", "ACCOUNT_EXISTS",
+//                            "message", "An account with these details already exists. Please log in."
+//                    ));
+//        }
+//
+//        try {
+//            UserDto dto = userService.register(user);
+//            return ResponseEntity.ok(Map.of(
+//                    "status", "success",
+//                    "data", dto
+//            ));
+//        } catch (Exception ex) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of(
+//                            "status", "error",
+//                            "code", "REGISTRATION_FAILED",
+//                            "message", "Registration could not be completed. Please try again."
+//                    ));
+//        }
+//    }
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody User user) {
-        // Check if user exists (without revealing which field conflicts)
-        if (userRepository.existsByUsername(user.getUsername()) ||
-                userRepository.existsByEmail(user.getEmail())) {
+        // First validate username format if needed
+        if (!isValidUsername(user.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "status", "error",
+                            "code", "INVALID_USERNAME",
+                            "message", "Username must be 4-20 characters and contain only letters and numbers"
+                    ));
+        }
 
+        // Check for existing email (only show email exists message)
+        if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of(
                             "status", "error",
-                            "code", "ACCOUNT_EXISTS",
-                            "message", "An account with these details already exists. Please log in."
+                            "code", "EMAIL_EXISTS",
+                            "message", "This email is already registered. Please log in or use a different email."
+                    ));
+        }
+
+        // Check for username availability (but don't treat as error if duplicates are allowed)
+        if (userRepository.existsByUsername(user.getUsername())) {
+            return ResponseEntity.status(HttpStatus.OK) // Not an error status
+                    .body(Map.of(
+                            "status", "info",
+                            "code", "USERNAME_TAKEN",
+                            "message", "This username is taken. You can still register with it, or choose another.",
+                            "allowContinue", true // Frontend can use this flag
                     ));
         }
 
@@ -60,10 +109,16 @@ public class AuthController {
                     .body(Map.of(
                             "status", "error",
                             "code", "REGISTRATION_FAILED",
-                            "message", "Registration could not be completed. Please try again."
+                            "message", "Registration failed: " + ex.getMessage()
                     ));
         }
     }
+
+    private boolean isValidUsername(String username) {
+        // Example validation - adjust per your requirements
+        return username != null && username.matches("^[a-zA-Z0-9]{4,20}$");
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity<Response> login(@RequestBody LoginRequest request) {

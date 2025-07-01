@@ -1,3 +1,75 @@
+// //
+// //
+// // import { useState } from 'react';
+// // import './ProfilePage.css';
+// //
+// // const ProfilePage = () => {
+// //     const user = JSON.parse(localStorage.getItem('user'));
+// //     const [file, setFile] = useState(null);
+// //     const [message, setMessage] = useState('');
+// //
+// //     if (!user) return <p>You are not logged in.</p>;
+// //
+// //     const handleFileChange = (e) => {
+// //         setFile(e.target.files[0]);
+// //     };
+// //
+// //     const handleImageUpload = async () => {
+// //         if (!file) {
+// //             setMessage("Please select an image file.");
+// //             return;
+// //         }
+// //
+// //         const formData = new FormData();
+// //         formData.append("image", file);
+// //
+// //         try {
+// //             const res = await fetch(`http://localhost:8080/api/auth/profile/${user.username}/upload-image`, {
+// //                 method: 'POST',
+// //                 body: formData,
+// //                 credentials: 'include'
+// //             });
+// //
+// //             if (res.ok) {
+// //                 const updatedUser = await res.json();
+// //                 localStorage.setItem('user', JSON.stringify(updatedUser.data));
+// //                 setMessage("✅ Image uploaded successfully!");
+// //                 window.location.reload();
+// //             } else {
+// //                 setMessage("❌ Failed to upload image.");
+// //             }
+// //         } catch (err) {
+// //             console.error(err);
+// //             setMessage("❌ Error uploading image.");
+// //         }
+// //     };
+// //
+// //     return (
+// //         <div className="profile-container">
+// //             <h2>👤 Your Profile</h2>
+// //             <div className="profile-card">
+// //                 <img
+// //                     src={`http://localhost:8080/${user.profileImage || 'default_profile_image.png'}`}
+// //                     alt="Profile"
+// //                     className="profile-image"
+// //                 />
+// //                 <p><strong>Username:</strong> {user.username}</p>
+// //                 <p><strong>Email:</strong> {user.email}</p>
+// //                 <p><strong>Role:</strong> {user.role}</p>
+// //
+// //                 <input type="file" accept="image/*" onChange={handleFileChange} />
+// //                 <button onClick={handleImageUpload} className="edit-button">Upload Image</button>
+// //
+// //                 {message && <p>{message}</p>}
+// //             </div>
+// //         </div>
+// //     );
+// // };
+// //
+// // export default ProfilePage;
+//
+//
+//
 //
 //
 // import { useState } from 'react';
@@ -34,7 +106,7 @@
 //                 const updatedUser = await res.json();
 //                 localStorage.setItem('user', JSON.stringify(updatedUser.data));
 //                 setMessage("✅ Image uploaded successfully!");
-//                 window.location.reload();
+//                 window.location.reload(); // Refresh to show the new image
 //             } else {
 //                 setMessage("❌ Failed to upload image.");
 //             }
@@ -44,23 +116,54 @@
 //         }
 //     };
 //
+//     // Construct the profile image URL
+//     // const profileImageUrl = user.profileImage
+//     //     ? `http://localhost:8080/uploads/profile_images/${user.profileImage}`
+//     //     : '/default_profile_image.png';
+//     const profileImageUrl = user.profileImage
+//         ? `http://localhost:8080/uploads/${user.profileImage}`  // e.g., "qqq_mechanical.jpeg"
+//         : '/default_profile_image.png';
+//
 //     return (
 //         <div className="profile-container">
 //             <h2>👤 Your Profile</h2>
 //             <div className="profile-card">
 //                 <img
-//                     src={`http://localhost:8080/${user.profileImage || 'default_profile_image.png'}`}
+//                     src={profileImageUrl}
 //                     alt="Profile"
 //                     className="profile-image"
+//                     onError={(e) => {
+//                         e.target.src = '/default_profile_image.png'; // Fallback if image fails to load
+//                     }}
 //                 />
 //                 <p><strong>Username:</strong> {user.username}</p>
 //                 <p><strong>Email:</strong> {user.email}</p>
 //                 <p><strong>Role:</strong> {user.role}</p>
 //
-//                 <input type="file" accept="image/*" onChange={handleFileChange} />
-//                 <button onClick={handleImageUpload} className="edit-button">Upload Image</button>
+//                 {/*<input type="file" accept="image/*" onChange={handleFileChange} />*/}
+//                 {/*<button onClick={handleImageUpload} className="edit-button">Upload Image</button>*/}
 //
-//                 {message && <p>{message}</p>}
+//                 {/*{message && <p>{message}</p>}*/}
+//                 <>
+//                     <input
+//                         id="file-upload"
+//                         type="file"
+//                         accept="image/*"
+//                         onChange={handleFileChange}
+//                         className="file-input"
+//                     />
+//                     <label htmlFor="file-upload" className="file-label">
+//                         Choose Image
+//                     </label>
+//                     <button onClick={handleImageUpload} className="edit-button">
+//                         <span>Upload Image</span>
+//                     </button>
+//                     {message && (
+//                         <p className={`message ${message.includes("✅") ? "success" : "error"}`}>
+//                             {message}
+//                         </p>
+//                     )}
+//                 </>
 //             </div>
 //         </div>
 //     );
@@ -69,6 +172,8 @@
 // export default ProfilePage;
 
 
+
+// 2nd update
 
 
 
@@ -79,11 +184,13 @@ const ProfilePage = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    if (!user) return <p>You are not logged in.</p>;
+    if (!user) return <p className="not-logged-in">You are not logged in.</p>;
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
+        setMessage(''); // Clear message when new file selected
     };
 
     const handleImageUpload = async () => {
@@ -91,6 +198,9 @@ const ProfilePage = () => {
             setMessage("Please select an image file.");
             return;
         }
+
+        setIsLoading(true);
+        setMessage('');
 
         const formData = new FormData();
         formData.append("image", file);
@@ -106,22 +216,20 @@ const ProfilePage = () => {
                 const updatedUser = await res.json();
                 localStorage.setItem('user', JSON.stringify(updatedUser.data));
                 setMessage("✅ Image uploaded successfully!");
-                window.location.reload(); // Refresh to show the new image
+                window.location.reload();
             } else {
                 setMessage("❌ Failed to upload image.");
             }
         } catch (err) {
             console.error(err);
             setMessage("❌ Error uploading image.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Construct the profile image URL
-    // const profileImageUrl = user.profileImage
-    //     ? `http://localhost:8080/uploads/profile_images/${user.profileImage}`
-    //     : '/default_profile_image.png';
     const profileImageUrl = user.profileImage
-        ? `http://localhost:8080/uploads/${user.profileImage}`  // e.g., "qqq_mechanical.jpeg"
+        ? `http://localhost:8080/uploads/${user.profileImage}`
         : '/default_profile_image.png';
 
     return (
@@ -133,37 +241,50 @@ const ProfilePage = () => {
                     alt="Profile"
                     className="profile-image"
                     onError={(e) => {
-                        e.target.src = '/default_profile_image.png'; // Fallback if image fails to load
+                        e.target.src = '/default_profile_image.png';
                     }}
                 />
-                <p><strong>Username:</strong> {user.username}</p>
-                <p><strong>Email:</strong> {user.email}</p>
-                <p><strong>Role:</strong> {user.role}</p>
+                <div className="profile-info">
+                    <p><strong>Username:</strong> {user.username}</p>
+                    <p><strong>Email:</strong> {user.email}</p>
+                    <p><strong>Role:</strong> {user.role}</p>
+                </div>
 
-                {/*<input type="file" accept="image/*" onChange={handleFileChange} />*/}
-                {/*<button onClick={handleImageUpload} className="edit-button">Upload Image</button>*/}
-
-                {/*{message && <p>{message}</p>}*/}
-                <>
+                <div className="upload-section">
                     <input
                         id="file-upload"
                         type="file"
                         accept="image/*"
                         onChange={handleFileChange}
                         className="file-input"
+                        disabled={isLoading}
                     />
-                    <label htmlFor="file-upload" className="file-label">
-                        Choose Image
+                    <label
+                        htmlFor="file-upload"
+                        className={`file-label ${isLoading ? 'disabled' : ''}`}
+                    >
+                        {file ? file.name : 'Choose Image'}
                     </label>
-                    <button onClick={handleImageUpload} className="edit-button">
-                        <span>Upload Image</span>
+                    <button
+                        onClick={handleImageUpload}
+                        className="edit-button"
+                        disabled={isLoading || !file}
+                    >
+                        {isLoading ? (
+                            <>
+                                <span className="spinner"></span>
+                                Uploading...
+                            </>
+                        ) : (
+                            'Upload Image'
+                        )}
                     </button>
                     {message && (
                         <p className={`message ${message.includes("✅") ? "success" : "error"}`}>
                             {message}
                         </p>
                     )}
-                </>
+                </div>
             </div>
         </div>
     );

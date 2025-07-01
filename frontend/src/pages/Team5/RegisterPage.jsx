@@ -46,6 +46,11 @@ const RegisterPage = () => {
                         : 'Registration failed. Please try again.');
 
                 setError({ type: 'error', message: errorMsg });
+
+                if (data.code === 'USERNAME_TAKEN') {
+                    const proceed = confirm(data.message);
+                    if (proceed) { /* submit again with allowContinue flag */ }
+                }
             }
         } catch (err) {
             setError({ type: 'error', message: 'Network error. Please check your connection.' });

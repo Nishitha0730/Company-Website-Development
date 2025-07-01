@@ -36,15 +36,33 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<Response> register(@RequestBody User user) {
-        try {
-            UserDto dto = userService.register(user);
-            return ResponseEntity.ok(new Response("Registration successful", dto));
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new Response("Error", ex.getMessage())); // ✅ so frontend can display it
+    public ResponseEntity<Map<String, Object>> register(@RequestBody User user) {
+        // Check if user exists (without revealing which field conflicts)
+        if (userRepository.existsByUsername(user.getUsername()) ||
+                userRepository.existsByEmail(user.getEmail())) {
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of(
+                            "status", "error",
+                            "code", "ACCOUNT_EXISTS",
+                            "message", "An account with these details already exists. Please log in."
+                    ));
         }
 
+        try {
+            UserDto dto = userService.register(user);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "data", dto
+            ));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "status", "error",
+                            "code", "REGISTRATION_FAILED",
+                            "message", "Registration could not be completed. Please try again."
+                    ));
+        }
     }
 
     @PostMapping("/login")

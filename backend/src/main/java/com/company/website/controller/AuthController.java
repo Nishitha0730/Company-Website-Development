@@ -93,8 +93,7 @@ public class AuthController {
                     .body(Map.of(
                             "status", "info",
                             "code", "USERNAME_TAKEN",
-                            "message", "This username is taken. You can still register with it, or choose another.",
-                            "allowContinue", true // Frontend can use this flag
+                            "message", "This username is taken. Please enter another user name."
                     ));
         }
 

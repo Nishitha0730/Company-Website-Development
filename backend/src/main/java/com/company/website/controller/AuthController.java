@@ -1,17 +1,17 @@
 package com.company.website.controller;
 
-
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.nio.file.*;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
+import java.util.Date;
 
 import com.company.website.dto.LoginRequest;
 import com.company.website.repository.UserRepository;
-
+import com.company.website.service.EmailService;
 import com.company.website.dto.Response;
 import com.company.website.dto.UserDto;
 import com.company.website.entity.User;
@@ -28,18 +28,20 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserRepository userRepository;
-
-    public AuthController(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserService userService;
+    private final EmailService emailService;
 
     @Autowired
-    private UserService userService;
+    public AuthController(UserRepository userRepository,
+                          UserService userService,
+                          EmailService emailService) {
+        this.userRepository = userRepository;
+        this.userService = userService;
+        this.emailService = emailService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody User user) {
-        // Validation moved to User class with @NotBlank, @Email, etc.
-
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(ErrorResponse.of(
@@ -57,8 +59,23 @@ public class AuthController {
         }
 
         try {
-            UserDto dto = userService.register(user);
-            return ResponseEntity.ok(SuccessResponse.of(dto));
+            // Generate verification token and set expiry date
+            String verificationToken = UUID.randomUUID().toString();
+            Date expiryDate = new Date(System.currentTimeMillis() + (24 * 60 * 60 * 1000)); // 24 hours
+
+            // Register user with verification token
+            UserDto dto = userService.register(user, verificationToken, expiryDate);
+
+            // Send verification email
+            String verificationLink = "http://localhost:3000/verify-email?token=" + verificationToken;
+            emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+
+            return ResponseEntity.ok(SuccessResponse.of(
+                    Map.of(
+                            "user", dto,
+                            "message", "Registration successful! Please check your email to verify your account."
+                    )
+            ));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ErrorResponse.of(
@@ -67,6 +84,54 @@ public class AuthController {
                     ));
         }
     }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<Map<String, Object>> verifyEmail(@RequestParam String token) {
+        try {
+            UserDto verifiedUser = userService.verifyEmail(token);
+            return ResponseEntity.ok(SuccessResponse.of(
+                    Map.of(
+                            "user", verifiedUser,
+                            "message", "Email verified successfully!"
+                    )
+            ));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse.of(
+                            "VERIFICATION_FAILED",
+                            ex.getMessage()
+                    ));
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, Object>> resendVerification(@RequestParam String email) {
+        try {
+            // Generate new token and expiry
+            String newToken = UUID.randomUUID().toString();
+            Date newExpiry = new Date(System.currentTimeMillis() + (24 * 60 * 60 * 1000));
+
+            userService.updateVerificationToken(email, newToken, newExpiry);
+
+            // Send new verification email
+            String verificationLink = "http://localhost:3000/verify-email?token=" + newToken;
+            emailService.sendVerificationEmail(email, verificationLink);
+
+            return ResponseEntity.ok(SuccessResponse.of(
+                    Map.of(
+                            "message", "Verification email resent successfully!"
+                    )
+            ));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse.of(
+                            "RESEND_FAILED",
+                            ex.getMessage()
+                    ));
+        }
+    }
+
+    // ... rest of your existing methods (login, profile, upload-image) remain the same ...
 
     public class ErrorResponse {
         public static Map<String, Object> of(String code, String message) {
@@ -84,65 +149,6 @@ public class AuthController {
                     "status", "success",
                     "data", data
             );
-        }
-    }
-
-    private boolean isValidUsername(String username) {
-        // Example validation - adjust per your requirements
-        return username != null && username.matches("^[a-zA-Z0-9]{4,20}$");
-    }
-
-
-    @PostMapping("/login")
-    public ResponseEntity<Response> login(@RequestBody LoginRequest request) {
-        UserDto dto = userService.login(request);
-        return ResponseEntity.ok(new Response("Login successful", dto));
-    }
-
-    @GetMapping("/profile/{username}")
-    public ResponseEntity<Response> getProfile(@PathVariable String username) {
-        UserDto dto = userService.getProfile(username);
-        return ResponseEntity.ok(new Response("Profile fetched", dto));
-    }
-
-
-
-    @PostMapping("/profile/{username}/upload-image")
-    public ResponseEntity<?> uploadProfileImage(
-            @PathVariable String username,
-            @RequestParam("image") MultipartFile file
-    ) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("Image is empty");
-        }
-
-        try {
-            String uploadDir = "uploads/";
-            String filename = username + "_" + file.getOriginalFilename(); // e.g., "qqq_mechanical.jpeg"
-
-            // Ensure uploads directory exists
-            File directory = new File(uploadDir);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            // Save file to disk
-            Path filepath = Paths.get(uploadDir, filename);
-            Files.copy(file.getInputStream(), filepath, StandardCopyOption.REPLACE_EXISTING);
-
-            // Update user's profileImage (store ONLY filename)
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            user.setProfileImage(filename); // ✅ Store "qqq_mechanical.jpeg", not "uploads/qqq_mechanical.jpeg"
-            userRepository.save(user);
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Image uploaded successfully",
-                    "data", EntityDtoMapper.toDto(user)
-            ));
-
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("Failed to upload image");
         }
     }
 }

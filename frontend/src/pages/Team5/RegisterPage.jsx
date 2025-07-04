@@ -10,6 +10,7 @@ const RegisterPage = () => {
     });
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showVerificationMessage, setShowVerificationMessage] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -21,6 +22,7 @@ const RegisterPage = () => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+        setShowVerificationMessage(false);
 
         try {
             const res = await fetch('http://localhost:8080/api/auth/register', {
@@ -32,12 +34,11 @@ const RegisterPage = () => {
             const data = await res.json();
 
             if (res.ok) {
-                // Clear sensitive data and proceed with success
+                // Clear sensitive data
                 setFormData(prev => ({ ...prev, password: '' }));
-                setError({ type: 'success', message: 'Registration successful! Redirecting...' });
-                setTimeout(() => navigate('/login'), 1500);
+                // Show verification message instead of redirecting
+                setShowVerificationMessage(true);
             } else {
-                // Handle errors
                 let errorMsg = 'Registration failed. Please try again.';
 
                 if (data.code === 'USERNAME_TAKEN') {
@@ -61,61 +62,110 @@ const RegisterPage = () => {
         }
     };
 
+    const handleResendVerification = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const res = await fetch('http://localhost:8080/api/auth/resend-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: formData.email }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setError({ type: 'success', message: 'Verification email resent successfully!' });
+            } else {
+                setError({
+                    type: 'error',
+                    message: data.message || 'Failed to resend verification email'
+                });
+            }
+        } catch (err) {
+            setError({ type: 'error', message: 'Network error. Please check your connection.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="auth-container">
             <h2>Register</h2>
 
-            {/* Success/Error Messages */}
             {error && (
                 <div className={`alert ${error.type === 'success' ? 'alert-success' : 'alert-error'}`}>
                     {error.message}
-                    {error.type === 'success' && <span className="spinner"></span>}
                 </div>
             )}
 
-            <form className="auth-form" onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Username (4-20 characters)"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                    minLength={4}
-                    maxLength={20}
-                    pattern="[a-zA-Z0-9]+"
-                />
+            {showVerificationMessage ? (
+                <div className="verification-message">
+                    <div className="alert alert-success">
+                        Registration successful! Please check your email ({formData.email})
+                        for the verification link.
+                    </div>
+                    <p>
+                        Didn't receive the email?
+                        <button
+                            onClick={handleResendVerification}
+                            disabled={isLoading}
+                            className="resend-button"
+                        >
+                            {isLoading ? 'Sending...' : 'Resend Verification Email'}
+                        </button>
+                    </p>
+                    <p>
+                        Already verified? <a href="/login">Login here</a>
+                    </p>
+                </div>
+            ) : (
+                <form className="auth-form" onSubmit={handleSubmit}>
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username (4-20 characters)"
+                        value={formData.username}
+                        onChange={handleChange}
+                        required
+                        minLength={4}
+                        maxLength={20}
+                        pattern="[a-zA-Z0-9]+"
+                        title="Only letters and numbers are allowed"
+                    />
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                    />
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    minLength={6}
-                />
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password (min 6 characters)"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        minLength={6}
+                    />
 
-                <button
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {isLoading ? 'Registering...' : 'Register'}
-                </button>
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Registering...' : 'Register'}
+                    </button>
 
-                <p className="auth-links">
-                    Already have an account? <a href="/login">Login here</a>
-                </p>
-            </form>
+                    <p className="auth-links">
+                        Already have an account? <a href="/login">Login here</a>
+                    </p>
+                </form>
+            )}
         </div>
     );
 };

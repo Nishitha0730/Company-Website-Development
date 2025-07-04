@@ -100,4 +100,31 @@ input:invalid {
 input:valid {
     border-color: #28a745;
 }
+
+
+.verification-message {
+    text-align: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.resend-button {
+    background: none;
+    border: none;
+    color: #1a73e8;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 5px;
+}
+
+.resend-button:hover {
+    color: #0d47a1;
+}
+
+.resend-button:disabled {
+    color: #999;
+    cursor: not-allowed;
+    text-decoration: none;
+}
 /*2nd update*/

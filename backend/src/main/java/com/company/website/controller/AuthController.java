@@ -92,7 +92,8 @@ public class AuthController {
             return ResponseEntity.ok(SuccessResponse.of(
                     Map.of(
                             "user", verifiedUser,
-                            "message", "Email verified successfully!"
+                            "message", "Email verified successfully! You can now login.",
+                            "redirect", true  // Add this flag
                     )
             ));
         } catch (Exception ex) {

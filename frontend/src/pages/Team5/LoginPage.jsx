@@ -4,12 +4,20 @@ import './Auth.css';
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ username: '', password: '' });
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(null);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
         try {
             const res = await fetch('http://localhost:8080/api/auth/login', {
                 method: 'POST',
@@ -17,28 +25,49 @@ const LoginPage = () => {
                 body: JSON.stringify(formData),
             });
 
-            const text = await res.text();
-            const data = text ? JSON.parse(text) : {};
+            const data = await res.json();
 
             if (res.ok) {
-                alert('✅ Login successful');
                 localStorage.setItem('user', JSON.stringify(data.data));
                 navigate('/profile');
             } else {
-                alert('❌ Login failed: ' + (data.data || 'Unknown error'));
+                let errorMsg = data.message || 'Login failed';
+
+                if (data.message && data.message.toLowerCase().includes('not verified')) {
+                    errorMsg = 'Email not verified. Please check your email for the verification link.';
+                }
+
+                setError(errorMsg);
             }
         } catch (err) {
-            alert('🚨 Network error: ' + err.message);
+            setError('Network error. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="auth-container">
             <h2>Login</h2>
+            {error && <div className="alert alert-error">{error}</div>}
             <form className="auth-form" onSubmit={handleSubmit}>
-                <input type="text" name="username" placeholder="Username" onChange={handleChange} required />
-                <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-                <button type="submit">Login</button>
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    onChange={handleChange}
+                    required
+                />
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    onChange={handleChange}
+                    required
+                />
+                <button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Logging in...' : 'Login'}
+                </button>
                 <p className="auth-links">
                     Don't have an account? <a href="/register">Register here</a>
                 </p>

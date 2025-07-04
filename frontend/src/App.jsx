@@ -5,6 +5,7 @@ import RegisterPage from './pages/Team5/RegisterPage';
 import ProfilePage from './pages/Team5/ProfilePage';
 import AdminPage from './pages/Team5/AdminPage';
 import Navbar from './pages/Team5/Navbar';
+import VerifyEmailPage from './pages/Team5/VerifyEmailPage';
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/admin" element={<AdminPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
             </Routes>
         </Router>
     );
